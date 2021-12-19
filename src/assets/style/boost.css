@@ -1,0 +1,106 @@
+.w-xs,
+.col.w-xs {
+    width: 160px;
+}
+
+.w-sm,
+.col.w-sm {
+    width: 200px;
+}
+
+.w,
+.w-md,
+.col.w,
+.col.w-md {
+    width: 240px;
+}
+
+.w-lg,
+.col.w-lg {
+    width: 280px;
+}
+
+.w-xl,
+.col.w-xl {
+    width: 320px;
+}
+
+.w-xxl,
+.col.w-xxl {
+    width: 360px;
+}
+
+/* 路由动画 */
+.slide-left-leave-active,
+.slide-right-leave-active,
+.slide-left-enter-active,
+.slide-right-enter-active {
+    transition: all 500ms;
+}
+
+/* .fade-enter,
+.fade-leave-to {
+    opacity: 0;
+    transform: translate3d(-100%, 0, 0);
+}
+
+.fade-leave,
+.fade-enter-to {
+    opacity: 1;
+} */
+
+.slide-left-leave-to,
+.slide-right-enter {
+    transform: translate3d(-100%, 0, 0);
+}
+.slide-right-leave-to,
+.slide-left-enter {
+    transform: translate3d(100%, 0, 0);
+}
+
+/* 边距 */
+.b {
+    border: 1px solid RGB(0, 0, 0, 0.25);
+}
+
+.b-l {
+    border-left: 1px solid RGB(0, 0, 0, 0.25);
+}
+
+.b-t {
+    border-top: 1px solid RGB(0, 0, 0, 0.25);
+}
+
+.b-r {
+    border-right: 1px solid RGB(0, 0, 0, 0.25);
+}
+
+.b-b {
+    border-bottom: 1px solid RGB(0, 0, 0, 0.25);
+}
+
+.b-nl {
+    border-left: none !important;
+}
+
+.b-nt {
+    border-top: none !important;
+}
+
+.b-nr {
+    border-right: none !important;
+}
+
+.b-nb {
+    border-bottom: none !important;
+}
+
+.v-list-item:hover .v-list-item__action.hover-show {
+    display: inherit !important;
+    animation: bounceInLeft 3s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.hover-show {
+    display: none !important;
+    animation: bounceInLeft 3s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+}

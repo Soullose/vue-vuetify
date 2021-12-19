@@ -1,0 +1,222 @@
+<template>
+    <x-dialog title="新增工作流" v-bind="$attrs" v-on="$listeners" @ok="ok" @cancel="cancel" fullscreen>
+        <v-row no-gutters>
+            <v-col cols="12">
+                <v-btn color="primary" class="ma-2" depressed :loading="isSelecting" @click="onButtonClick">加载</v-btn>
+                <input ref="uploader" class="d-none" type="file" accept="*" @change="onFileChanged" />
+                <v-btn class="ma-2" color="primary" depressed @click="saveXML" ref="saveXML" :href="downBPMNLink" :download="downBPMNname">保存为BPMN</v-btn>
+                <v-btn class="ma-2" color="primary" depressed @click="saveSVG" ref="saveSvg" :href="downSVGLink" :download="downSVGname">保存为svg</v-btn>
+                <v-btn class="ma-2" color="primary" depressed @click="handlerUndo">撤销</v-btn>
+                <v-btn class="ma-2" color="primary" depressed @click="handlerRedo">恢复</v-btn>
+                <v-btn color="primary" class="ma-2" depressed :loading="isSelecting" @click="onSaveBpmn">保存到数据库</v-btn>
+            </v-col>
+            <v-col sm="9">
+                <div class="containers">
+                    <div class="canvas" ref="canvas"></div>
+                </div>
+            </v-col>
+            <v-col sm="3"></v-col>
+        </v-row>
+    </x-dialog>
+</template>
+<script>
+// 引入相关的依赖
+import BpmnModeler from 'bpmn-js/lib/Modeler';
+import xmlStr from '../components/bpmn/mock/xmlStr';
+import customModule from '../components/bpmn/custom/index';
+// import customTranslate from '../components/bpmn/translate/index';
+
+import 'bpmn-js/dist/assets/diagram-js.css';
+import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
+import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-codes.css';
+import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
+export default {
+    props: {},
+    components: {},
+    // 生命周期 - 创建完成（可以访问当前this实例）
+    created() {},
+    // 生命周期 - 载入后, Vue 实例挂载到实际的 DOM 操作完成，一般在该过程进行 Ajax 交互
+    mounted() {
+        this.init();
+    },
+    data() {
+        return {
+            // bpmn建模器
+            bpmnModeler: null,
+            container: null,
+            canvas: null,
+            downBPMNLink: '',
+            downBPMNname: '',
+            downSVGLink: '',
+            downSVGname: '',
+            isSelecting: false,
+            xmlStr: xmlStr()
+        };
+    },
+    methods: {
+        cancel() {
+            this.$emit('close', { code: 'ok' });
+        },
+        ok() {
+            this.$emit('close', { code: 'ok' });
+            console.log('ok');
+        },
+        init() {
+            // 获取到属性ref为“canvas”的dom节点
+            const canvas = this.$refs.canvas;
+            // const customTranslateModule = {
+            //     translate: ['value', customTranslate]
+            // };
+            // 建模
+            this.bpmnModeler = new BpmnModeler({
+                container: canvas,
+                //添加控制板
+                propertiesPanel: {
+                    parent: '#js-properties-panel'
+                },
+                additionalModules: [
+                    //国际化中文翻译
+                    // customTranslateModule,
+                    customModule
+                ]
+            });
+            this.createNewDiagram();
+        },
+        async createNewDiagram() {
+            // 将字符串转换成图显示出来
+            try {
+                const result = await this.bpmnModeler.importXML(this.xmlStr);
+                const { warnings } = result;
+                console.log(warnings);
+                console.log('js', this.bpmnModeler);
+                console.log('open', this.bpmnModeler.getModules());
+                var elementRegistry = this.bpmnModeler.get('elementRegistry');
+                const eventBus = this.bpmnModeler.get('eventBus');
+                console.log('啦啦啦', elementRegistry);
+                console.log('www', eventBus);
+                // console.log('xxx',eventBus.newSelection[0])
+                console.log(
+                    '123',
+                    elementRegistry.find((el) => el.type === 'bpmn:Process')
+                );
+
+                this.success();
+            } catch (err) {
+                console.log(err.message, err.warnings);
+            }
+        },
+        success() {
+            // console.log('创建成功!')
+            // this.addModelerListener();
+            // this.addEventBusListener();
+            // this.initModeler();
+            // this.initProcess();
+        },
+        ///保存为bpmn文件
+        async saveXML(done) {
+            console.log('saveXML');
+            try {
+                const result = await this.bpmnModeler.saveXML({ format: true }, done);
+                return result;
+            } catch (err) {
+                console.log(err);
+            }
+        },
+        ///保存为SVG
+        async saveSVG(done) {
+            try {
+                const result = await this.bpmnModeler.saveSVG(done);
+                return result;
+            } catch (err) {
+                console.log(err);
+            }
+        },
+        /// 根据所需类型进行转码并返回下载地址
+        setEncoded(type, filename, data) {
+            const encodedData = encodeURIComponent(data);
+            if (type == 'bpmn') {
+                this.downBPMNLink = `data:application/${type === 'svg' ? 'text/xml' : 'bpmn20-xml'};charset=UTF-8,${encodedData}`;
+                this.downBPMNname = `${filename}.${type}`;
+            } else {
+                this.downSVGLink = `data:application/${type === 'svg' ? 'text/xml' : 'bpmn20-xml'};charset=UTF-8,${encodedData}`;
+                this.downSVGname = `${filename}.${type}`;
+            }
+        },
+        handlerRedo() {
+            this.bpmnModeler.get('commandStack').redo();
+        },
+        handlerUndo() {
+            this.bpmnModeler.get('commandStack').undo();
+        },
+        onButtonClick() {
+            this.isSelecting = true;
+            window.addEventListener(
+                'focus',
+                () => {
+                    this.isSelecting = false;
+                },
+                { once: true }
+            );
+
+            this.$refs.uploader.click();
+        },
+        onFileChanged(e) {
+            const that = this;
+            const file = e.target.files[0];
+
+            // do something
+            var reader = new FileReader();
+            reader.readAsText(file);
+            reader.onload = function () {
+                that.xmlStr = this.result;
+                console.log('11119999', that.xmlStr);
+                that.createNewDiagram();
+            };
+        },
+        async onSaveBpmn(done) {
+            try {
+                this.isSelecting = true;
+                window.addEventListener(
+                    'focus',
+                    () => {
+                        this.isSelecting = false;
+                    },
+                    { once: true }
+                );
+                // console.log(this.http);
+                const result = await this.bpmnModeler.saveSVG(done);
+                console.log('保存', result);
+                return result;
+            } catch (err) {
+                console.log(err);
+            }
+        }
+    }
+};
+</script>
+<style scoped>
+.containers {
+    background-color: #ffffff;
+    width: 100%;
+    /* height: 500px; */
+}
+.canvas {
+    width: 100%;
+    height: 100%;
+}
+.panel {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 300px;
+}
+.containers {
+    background: white;
+    overflow: auto;
+    background-image: linear-gradient(90deg, rgba(220, 220, 220, 0.5) 6%, transparent 0), linear-gradient(rgba(192, 192, 192, 0.5) 6%, transparent 0);
+    background-size: 12px 12px;
+    width: 100%;
+    height: calc(100vh - 122px);
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+}
+</style>

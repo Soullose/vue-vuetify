@@ -1,0 +1,105 @@
+<template>
+    <x-app>
+        <v-row no-gutters>
+            <x-col-panel cols="auto w-lg">
+                <v-toolbar slot="header" dense flat>
+                    <v-spacer />
+                    <v-btn text color="primary" @click="createSystem">新增</v-btn>
+                    <v-btn text color="primary" @click="modifySystem">修改</v-btn>
+                </v-toolbar>
+                <v-list class="py-0" two-line>
+                    <v-list-item-group active-class="primary--text">
+                        <v-list-item>
+                            <v-list-item-avatar>
+                                <v-icon class="primary lighten-3" dark>mdi-folder-outline</v-icon>
+                            </v-list-item-avatar>
+
+                            <v-list-item-content>
+                                <v-list-item-title>人事</v-list-item-title>
+                                <v-list-item-subtitle>XXX</v-list-item-subtitle>
+                            </v-list-item-content>
+                            <v-list-item-action>
+                                <v-btn icon class="hover-show">
+                                    <v-icon small color="error lighten-1">mdi-delete-forever-outline</v-icon>
+                                </v-btn>
+                            </v-list-item-action>
+                        </v-list-item>
+                    </v-list-item-group>
+                </v-list>
+            </x-col-panel>
+
+            <x-col-panel no-border class="ml-n3">
+                <v-toolbar slot="header" dense flat>
+                    <v-btn text color="primary" @click="editBpmn">设计</v-btn>
+                </v-toolbar>
+                <x-grid :ds="dsSystem" no-line-num>
+                    <x-grid-column headerName="流程名称" field="bpmnName" />
+                    <x-grid-column headerName="流程Key" field="bpmnKey" type="object">
+                        <template v-slot:render="{ data }">
+                            {{ data.bpmnKey }}
+                        </template>
+
+                        <template v-slot:editor="{ data }">
+                            <v-text-field v-model="data.bpmnName" />
+                            <v-text-field v-model="data.bpmnKey" />
+                        </template>
+                    </x-grid-column>
+                    <x-grid-column headerName="部署情况" field="deployed" type="object">
+                        <template v-slot:render="{ data }">{{ data.bpmnDefKey == '' ? '未部署' : '已部署' }}</template>
+                    </x-grid-column>
+                    <x-grid-column headerName="版本" field="bpmnVersion"></x-grid-column>
+                    <x-grid-column headerName="表单路径" field="path"></x-grid-column>
+                    <x-grid-column headerName="创建时间" field="createDate"></x-grid-column>
+                </x-grid>
+            </x-col-panel>
+        </v-row>
+    </x-app>
+</template>
+<script>
+export default {
+    datastores: {
+        dsSystem: 'workflow/holidays/queryBasicBpmn'
+    },
+    methods: {
+        createSystem() {
+            this.$dialog.open(
+                import('./customModel.vue'),
+                {},
+                {
+                    ok: () => {
+                        console.log('xxx');
+                    }
+                }
+            );
+        },
+
+        modifySystem() {
+            // this.$dialog.open(
+            //     import('./ModifySystem'),
+            //     {
+            //         system: {
+            //             name: 'XXXXXXXXXXXXXXxx'
+            //         }
+            //     },
+            //     {
+            //         ok: () => {
+            //             alert('Modify Completed');
+            //         }
+            //     }
+            // );
+        },
+        editBpmn() {
+            console.log('设计流程图');
+            this.$dialog.open(
+                import('./customModel.vue'),
+                {},
+                {
+                    ok: () => {
+                        console.log('xxx');
+                    }
+                }
+            );
+        }
+    }
+};
+</script>
