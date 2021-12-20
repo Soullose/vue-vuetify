@@ -19,7 +19,7 @@
                         <v-expansion-panel>
                             <v-expansion-panel-header>常规</v-expansion-panel-header>
                             <v-expansion-panel-content>
-                                <x-form>
+                                <v-form>
                                     <v-text-field label="节点key" v-model="elementBaseInfo.id" clearable @change="updateBaseInfo('id')" />
                                     <v-text-field label="节点名称" v-model="elementBaseInfo.name" clearable @change="updateBaseInfo('name')" />
                                     <v-textarea
@@ -32,7 +32,7 @@
                                     <!-- <v-text-field v-if="processType === 'bpmn:Process'" label="版本标签" v-model="versionTag" /> -->
                                     <!-- <v-switch v-model="isExecutable" label="可执行" class="ma-2"></v-switch> -->
                                     <!-- <v-btn @click="add">添加</v-btn> -->
-                                </x-form>
+                                </v-form>
                             </v-expansion-panel-content>
                         </v-expansion-panel>
                         <template v-if="processType === 'bpmn:UserTask'">
@@ -43,6 +43,14 @@
                                     <template v-if="this.itemSelect != null">
                                         <v-text-field :label="selected" clearable @change="updateElementTask"></v-text-field>
                                     </template>
+                                </v-expansion-panel-content>
+                            </v-expansion-panel>
+                        </template>
+                        <template v-if="processType.indexOf('Task') !== -1">
+                            <v-expansion-panel>
+                                <v-expansion-panel-header>会签配置</v-expansion-panel-header>
+                                <v-expansion-panel-content>
+                                    <element-multi-instance :bpmn-modeler="bpmnInstances" :bpmn-element="element" />
                                 </v-expansion-panel-content>
                             </v-expansion-panel>
                         </template>
@@ -103,8 +111,9 @@
 import _ from 'lodash';
 import { Bpmn, DefaultEmptyXML } from '@/boost-vue/components/Bpmn';
 import { initListenerType } from './listener/utilSelf';
+import ElementMultiInstance from './panel/Multi-instance/ElementMultiInstance.vue';
 export default {
-    components: { Bpmn },
+    components: { Bpmn, ElementMultiInstance },
     props: {
         defProcessName: null,
         defProcessId: null,
