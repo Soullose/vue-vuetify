@@ -1,9 +1,9 @@
 import config from './config';
 import components from './components';
-import BNXComponents from '@/__bnx/components';
-import MJYComponents from '@/__mjy/components';
+// import BNXComponents from '@/__bnx/components';
+// import MJYComponents from '@/__mjy/components';
 
-import BNXServices from '@/__bnx/services';
+// import BNXServices from '@/__bnx/services';
 
 import http from './services/Http';
 import log from './services/Log';
@@ -22,10 +22,10 @@ var services = {
 
 function install(Vue) {
     _.each(components, (component, name) => Vue.component(name, component));
-    _.each(BNXComponents, (component, name) => Vue.component(name, component));
-    _.each(MJYComponents, (component, name) => Vue.component(name, component));
+    // _.each(BNXComponents, (component, name) => Vue.component(name, component));
+    // _.each(MJYComponents, (component, name) => Vue.component(name, component));
 
-    _.each(BNXServices, (service, name) => service.install(Vue, config[name]));
+    // _.each(BNXServices, (service, name) => service.install(Vue, config[name]));
     _.each(services, (service, name) => service.install(Vue, config[name]));
 
     DataStoreFactory.install(Vue);

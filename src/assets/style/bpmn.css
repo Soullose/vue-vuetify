@@ -55,18 +55,22 @@
   stroke: red !important;
 }
 .nodeSuccess:not(.djs-connection) .djs-visual > :nth-child(1) {
-  stroke: black !important;
-  fill: #cff5fa !important;
-  /* elements as success */
-}
-.nodeSuccess1:not(.djs-connection) .djs-visual > :nth-child(1) {
-  stroke: red !important;
-  stroke-width: 3px;
-  /* elements as success */
-}
-.highlight .djs-visual > :nth-child(1) {
-  stroke: black !important;
+  stroke: rgb(67, 160, 71) !important;
+  stroke-width: 2px !important;
   fill: #d7f6ce !important;
+  fill-opacity: 0.95 !important;
+}
+.nodeSuccess:not(.djs-connection) .djs-label > :nth-child(1) {
+  fill: rgb(67, 160, 71) !important;
+}
+.highlight:not(.djs-connection) .djs-visual > :nth-child(1) {
+  stroke: rgb(30, 136, 229) !important;
+  stroke-width: 2px !important;
+  fill: #cff5fa !important;
+  fill-opacity: 0.95 !important;
+}
+.highlight:not(.djs-connection) .djs-label > :nth-child(1) {
+  fill: rgb(30, 136, 229) !important;
 }
 .sequenceFlow .djs-visual > :nth-child(1) {
   stroke: green !important;

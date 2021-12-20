@@ -46,7 +46,7 @@ var Viewer = {
                         if (!_.isNil(this.finishedFlowElement)) {
                             for (const key in this.finishedFlowElement) {
                                 console.log('key', key);
-                                canvas.addMarker(this.finishedFlowElement[key], 'highlight');
+                                canvas.addMarker(this.finishedFlowElement[key], 'nodeSuccess');
                             }
                         }
                         if (!_.isNil(this.sequenceFlow)) {
@@ -56,7 +56,7 @@ var Viewer = {
                             }
                         }
                         if (!_.isNil(this.currentFlowElement)) {
-                            canvas.addMarker(this.currentFlowElement, 'nodeSuccess');
+                            canvas.addMarker(this.currentFlowElement, 'highlight');
                         }
                     })
                     .catch((e) => {
