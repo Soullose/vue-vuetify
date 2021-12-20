@@ -34,7 +34,7 @@
                     <v-btn text color="primary" @click="createNewBpmn" :disabled="_.isNil(selectedBpmnType)">新增</v-btn>
                     <v-btn text color="primary" @click="modifyWorkflow" :disabled="_.isNil(rowSelected)">修改</v-btn>
                     <v-btn text color="primary" @click="deleteWorkflow" :disabled="_.isNil(rowSelected)">删除</v-btn>
-                    <v-btn text color="primary" @click="designerBpmn" :disabled="_.isNil(rowSelected)">设计</v-btn>
+                    <v-btn text color="primary" @click="designerBpmn">设计</v-btn>
                     <v-btn text color="primary" @click="deployedBpmn" :disabled="_.isNil(rowSelected)">部署</v-btn>
                     <v-btn text color="primary" @click="viewBpmn" :disabled="_.isNil(rowSelected)">查看</v-btn>
                     <!-- <v-btn text color="primary" @click="testView">测试查看</v-btn> -->
@@ -220,50 +220,50 @@ export default {
             console.log('设计流程图');
             // var DefaultEmptyBpmn = DefaultEmptyXML.create(null, null, null, _vm.rowSelected.bpmnName);
             // console.log('DefaultEmptyBpmn', DefaultEmptyBpmn);
-            if (_.isNil(_vm.rowSelected.deploymentId)) {
-                this.$dialog.open(
-                    import('./customModel.vue'),
-                    { defProcessName: _vm.rowSelected.bpmnName, defProcessId: _vm.rowSelected.id },
-                    {
-                        ok(value) {
-                            value.workflowId = _vm.rowSelected.id;
-                            _vm.$http
-                                .url('workflow/manager/designerWorkflow')
-                                .data(value)
-                                .post()
-                                .then((response) => {
-                                    console.log(response.data);
-                                    this.dsBpmn.modify(_vm.rowSelected, response.data);
-                                });
-                        }
+            // if (_.isNil(_vm.rowSelected.deploymentId)) {
+            this.$dialog.open(
+                import('./customModel.vue'),
+                { defProcessName: _vm.rowSelected?.bpmnName ?? '', defProcessId: _vm.rowSelected?.id ?? '' },
+                {
+                    ok(value) {
+                        value.workflowId = _vm.rowSelected.id;
+                        _vm.$http
+                            .url('workflow/manager/designerWorkflow')
+                            .data(value)
+                            .post()
+                            .then((response) => {
+                                console.log(response.data);
+                                this.dsBpmn.modify(_vm.rowSelected, response.data);
+                            });
                     }
-                );
-            } else {
-                this.$http
-                    .url('workflow/getXml')
-                    .params({ deploymentId: _vm.rowSelected.deploymentId })
-                    .get()
-                    .then((response) => {
-                        console.log('response', response.data);
-                        this.$dialog.open(
-                            import('./customModel.vue'),
-                            { defProcessName: _vm.rowSelected.bpmnName, defProcessId: _vm.rowSelected.id, process: response.data },
-                            {
-                                ok(value) {
-                                    value.workflowId = _vm.rowSelected.id;
-                                    _vm.$http
-                                        .url('workflow/manager/designerWorkflow')
-                                        .data(value)
-                                        .post()
-                                        .then((response) => {
-                                            console.log(response.data);
-                                            this.dsBpmn.modify(_vm.rowSelected, response.data);
-                                        });
-                                }
-                            }
-                        );
-                    });
-            }
+                }
+            );
+            // } else {
+            //     this.$http
+            //         .url('workflow/getXml')
+            //         .params({ deploymentId: _vm.rowSelected.deploymentId })
+            //         .get()
+            //         .then((response) => {
+            //             console.log('response', response.data);
+            //             this.$dialog.open(
+            //                 import('./customModel.vue'),
+            //                 { defProcessName: _vm.rowSelected.bpmnName, defProcessId: _vm.rowSelected.id, process: response.data },
+            //                 {
+            //                     ok(value) {
+            //                         value.workflowId = _vm.rowSelected.id;
+            //                         _vm.$http
+            //                             .url('workflow/manager/designerWorkflow')
+            //                             .data(value)
+            //                             .post()
+            //                             .then((response) => {
+            //                                 console.log(response.data);
+            //                                 this.dsBpmn.modify(_vm.rowSelected, response.data);
+            //                             });
+            //                     }
+            //                 }
+            //             );
+            //         });
+            // }
         },
         //部署工作流
         deployedBpmn() {

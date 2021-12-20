@@ -19,20 +19,7 @@
                         <v-expansion-panel>
                             <v-expansion-panel-header>常规</v-expansion-panel-header>
                             <v-expansion-panel-content>
-                                <v-form>
-                                    <v-text-field label="节点key" v-model="elementBaseInfo.id" clearable @change="updateBaseInfo('id')" />
-                                    <v-text-field label="节点名称" v-model="elementBaseInfo.name" clearable @change="updateBaseInfo('name')" />
-                                    <v-textarea
-                                        solo
-                                        label="流程描述"
-                                        v-model="documentation"
-                                        @change="updateDocumentation"
-                                        :disabled="_.isNil(this.elementObj)"
-                                    />
-                                    <!-- <v-text-field v-if="processType === 'bpmn:Process'" label="版本标签" v-model="versionTag" /> -->
-                                    <!-- <v-switch v-model="isExecutable" label="可执行" class="ma-2"></v-switch> -->
-                                    <!-- <v-btn @click="add">添加</v-btn> -->
-                                </v-form>
+                                <element-base-info :bpmn-modeler="bpmnInstances" :bpmn-element="element" :business-object="businessObject"></element-base-info>
                             </v-expansion-panel-content>
                         </v-expansion-panel>
                         <template v-if="processType === 'bpmn:UserTask'">
@@ -112,8 +99,9 @@ import _ from 'lodash';
 import { Bpmn, DefaultEmptyXML } from '@/boost-vue/components/Bpmn';
 import { initListenerType } from './listener/utilSelf';
 import ElementMultiInstance from './panel/Multi-instance/ElementMultiInstance.vue';
+import ElementBaseInfo from './panel/base/ElementBaseInfo.vue';
 export default {
-    components: { Bpmn, ElementMultiInstance },
+    components: { Bpmn, ElementMultiInstance, ElementBaseInfo },
     props: {
         defProcessName: null,
         defProcessId: null,
@@ -127,8 +115,6 @@ export default {
         modeler: Object,
         element: null,
         elementObj: null,
-        // processKey: '',
-        // processName: '',
         processType: '',
         documentation: '',
         versionTag: '',
@@ -170,7 +156,8 @@ export default {
             elementRegistry: Object,
             replace: Object,
             selection: Object
-        }
+        },
+        businessObject: {}
     }),
     // mounted() {
     //     this.bpmnModel = DefaultEmptyXML.create(null, null, null, this.defProcessName);
@@ -247,6 +234,7 @@ export default {
             });
             // 监听选择事件，修改当前激活的元素以及表单
             _vm.modeler.on('selection.changed', ({ newSelection }) => {
+                console.log('selection.changed');
                 _vm.initFormOnChanged(newSelection[0] || null);
             });
             _vm.modeler.on('element.changed', ({ element }) => {
@@ -273,12 +261,17 @@ export default {
                     ----------
                     `);
             console.log('businessObject: ', activatedElement.businessObject);
+            _vm.businessObject = activatedElement.businessObject;
             _vm.element = activatedElement;
             _vm.elementBaseInfo = JSON.parse(JSON.stringify(activatedElement.businessObject));
             _vm.processType = activatedElement.type;
             const documentations = activatedElement?.businessObject?.documentation;
             var documentation = documentations && documentations.length ? documentations[0].text : '';
             console.log('documentation:', documentation);
+            var elementListener = activatedElement?.extensionElements?.values?.filter((ex) => ex.$type === 'flowable:ExecutionListener') ?? [];
+            console.log('elementListener:', elementListener);
+            _vm.bpmnElementListeners = elementListener;
+            _vm.elementListenersList = _vm.bpmnElementListeners.map((listener) => initListenerType(listener));
             // window.bpmnInstances.bpmnElement = activatedElement;
             // this.bpmnElement = activatedElement;
             // this.elementId = activatedElement.id;
@@ -306,24 +299,22 @@ export default {
             // this.elementBaseInfo.processType = shape.type;
         },
         elementClick(element, elementObj) {
-            var _vm = this;
-            console.log('elementObj', elementObj);
-            console.log('F-element', element);
-            console.log('businessObject', element.businessObject);
-            _vm.shap = element.businessObject;
-            _vm.element = element;
-            _vm.elementObj = elementObj;
-            // this.elementBaseInfo.id = element.id;
-            // this.elementBaseInfo.name = element.businessObject.name;
-            _vm.processType = element.type;
-            console.log('点击了' + element.type + _vm.processKey);
+            // var _vm = this;
+            // console.log('elementObj', elementObj);
+            // console.log('F-element', element);
+            // console.log('businessObject', element.businessObject);
+            // _vm.shap = element.businessObject;
+            // _vm.element = element;
+            // _vm.elementObj = elementObj;
+            // _vm.processType = element.type;
+            // console.log('点击了' + element.type + _vm.processKey);
             // this.$refs.bpmn.updateDocumentation(this.processKey, '说明文档啦啦啦');
-            _vm.elementBaseInfo = JSON.parse(JSON.stringify(element.businessObject));
-            console.log('elementBaseInfo', _vm.elementBaseInfo);
-            var elementListener = this.shap?.extensionElements?.values?.filter((ex) => ex.$type === 'flowable:ExecutionListener') ?? [];
-            console.log('elementListener:', elementListener);
-            _vm.bpmnElementListeners = elementListener;
-            _vm.elementListenersList = _vm.bpmnElementListeners.map((listener) => initListenerType(listener));
+            // _vm.elementBaseInfo = JSON.parse(JSON.stringify(element.businessObject));
+            // console.log('elementBaseInfo', _vm.elementBaseInfo);
+            // var elementListener = this.shap?.extensionElements?.values?.filter((ex) => ex.$type === 'flowable:ExecutionListener') ?? [];
+            // console.log('elementListener:', elementListener);
+            // _vm.bpmnElementListeners = elementListener;
+            // _vm.elementListenersList = _vm.bpmnElementListeners.map((listener) => initListenerType(listener));
         },
         BpmnModelxml(bpmnXml) {
             // console.log('新图', bpmnXml);
