@@ -34,7 +34,7 @@
                     <v-btn text color="primary" @click="createNewBpmn" :disabled="_.isNil(selectedBpmnType)">新增</v-btn>
                     <v-btn text color="primary" @click="modifyWorkflow" :disabled="_.isNil(rowSelected)">修改</v-btn>
                     <v-btn text color="primary" @click="deleteWorkflow" :disabled="_.isNil(rowSelected)">删除</v-btn>
-                    <v-btn text color="primary" @click="designerBpmn">设计</v-btn>
+                    <v-btn text color="primary" @click="designerBpmn" :disabled="_.isNil(rowSelected)">设计</v-btn>
                     <v-btn text color="primary" @click="deployedBpmn" :disabled="_.isNil(rowSelected)">部署</v-btn>
                     <v-btn text color="primary" @click="viewBpmn" :disabled="_.isNil(rowSelected)">查看</v-btn>
                     <!-- <v-btn text color="primary" @click="testView">测试查看</v-btn> -->

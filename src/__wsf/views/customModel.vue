@@ -22,14 +22,27 @@
                                 <element-base-info :bpmn-modeler="bpmnInstances" :bpmn-element="element" :business-object="businessObject"></element-base-info>
                             </v-expansion-panel-content>
                         </v-expansion-panel>
+                        <template v-if="processType === 'bpmn:ServiceTask'">
+                            <v-expansion-panel>
+                                <v-expansion-panel-header>服务任务</v-expansion-panel-header>
+                                <v-expansion-panel-content>
+                                    <service-task :bpmn-modeler="bpmnInstances" :bpmn-element="element" :business-object="businessObject"></service-task>
+                                </v-expansion-panel-content>
+                            </v-expansion-panel>
+                        </template>
+                        <template v-if="processType === 'bpmn:ScriptTask'">
+                            <v-expansion-panel>
+                                <v-expansion-panel-header>脚本任务</v-expansion-panel-header>
+                                <v-expansion-panel-content>
+                                    <script-task :bpmn-modeler="bpmnInstances" :bpmn-element="element" :business-object="businessObject"></script-task>
+                                </v-expansion-panel-content>
+                            </v-expansion-panel>
+                        </template>
                         <template v-if="processType === 'bpmn:UserTask'">
                             <v-expansion-panel>
                                 <v-expansion-panel-header>审核者</v-expansion-panel-header>
                                 <v-expansion-panel-content>
-                                    <v-select :items="userSelect" label="用户类型" item-text="name" item-value="id" outlined dense @change="select"></v-select>
-                                    <template v-if="this.itemSelect != null">
-                                        <v-text-field :label="selected" clearable @change="updateElementTask"></v-text-field>
-                                    </template>
+                                    <user-task :bpmn-modeler="bpmnInstances" :bpmn-element="element" :business-object="businessObject"></user-task>
                                 </v-expansion-panel-content>
                             </v-expansion-panel>
                         </template>
@@ -100,8 +113,12 @@ import { Bpmn, DefaultEmptyXML } from '@/boost-vue/components/Bpmn';
 import { initListenerType } from './listener/utilSelf';
 import ElementMultiInstance from './panel/Multi-instance/ElementMultiInstance.vue';
 import ElementBaseInfo from './panel/base/ElementBaseInfo.vue';
+import UserTask from './panel/task/components/UserTask.vue';
+import ScriptTask from './panel/task/components/ScriptTask.vue';
+import ServiceTask from './panel/task/components/ServiceTask.vue';
+
 export default {
-    components: { Bpmn, ElementMultiInstance, ElementBaseInfo },
+    components: { Bpmn, ElementMultiInstance, ElementBaseInfo, UserTask, ScriptTask, ServiceTask },
     props: {
         defProcessName: null,
         defProcessId: null,
@@ -123,12 +140,6 @@ export default {
         listenerForm: {},
         shap: null,
         elementBaseInfo: {},
-        userSelect: [
-            { id: 'assignee', name: '指定人' },
-            { id: 'candidateUsers', name: '候选用户' },
-            { id: 'candidateGroups', name: '候选角色' }
-        ],
-        itemSelect: null,
         elementHeaders: [
             { text: '事件类型', value: 'event' },
             { text: '监听器类型', value: 'listenerType' },
@@ -167,11 +178,7 @@ export default {
     //     // }, 500);
     // },
 
-    computed: {
-        selected: function () {
-            return '选择' + this.itemSelect.name;
-        }
-    },
+    computed: {},
     watch: {
         elementBaseInfo: {
             immediate: false,
@@ -378,34 +385,6 @@ export default {
             console.log(this.documentation);
             this.$refs.bpmn.updateDocumentation(this.element, this.documentation);
         },
-        select(v) {
-            console.log('vv', v);
-            var _vm = this;
-            this.userSelect.filter(function (item, index, arr0) {
-                if (item.id == v) {
-                    console.log('item', item);
-                    console.log(index);
-                    console.log(arr0);
-                    _vm.itemSelect = item;
-                }
-            });
-            console.log('item', _vm.itemSelect);
-        },
-        updateElementTask(event) {
-            var _vm = this;
-            let taskAttr = Object.create(null);
-            taskAttr[_vm.itemSelect.id] = event;
-            console.log(taskAttr);
-            this.$refs.bpmn.modifyModel(this.element, taskAttr);
-            _vm.testNode();
-        },
-        testNode() {
-            var _vm = this;
-            let taskAttr = Object.create(null);
-            taskAttr['test'] = 'test123456789';
-            console.log(taskAttr);
-            _vm.$refs.bpmn.modifyModel(this.element, taskAttr);
-        },
         openElementListenerForm(v) {
             var _vm = this;
             // console.log('v:', v);
@@ -433,14 +412,14 @@ export default {
         },
         openUserTaskListenerForm(v) {
             var _vm = this;
-            console.log('v:', v);
-            console.log('elementObj:', _vm.elementObj);
-            var elementObj = _vm.elementObj;
-            if (elementObj == null) {
-                this.snackbar = true;
-                this.text = '请在流程图上点击一个组件';
-                return;
-            }
+            // console.log('v:', v);
+            // console.log('businessObject:', _vm.businessObject);
+            // var businessObject = _vm.businessObject;
+            // if (businessObject == null) {
+            //     this.snackbar = true;
+            //     this.text = '请在流程图上点击一个组件';
+            //     return;
+            // }
             if (v == null) {
                 console.log('新增');
                 _vm.$dialog.open(
