@@ -27,7 +27,6 @@ export default {
     methods: {
         resetBaseInfo() {
             var _vm = this;
-            console.log('_vm.element', _vm.element);
             _vm.elementBaseInfo = JSON.parse(JSON.stringify(_vm.businessObject));
         },
         updateBaseInfo(key) {

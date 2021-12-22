@@ -39,6 +39,10 @@ export function initListenerType(listener) {
         listenerType: listenerType
     };
 }
+// 返回 flowable:TaskListener 或者 flowable:ExecutionListener
+export function isTaskListener(isTask) {
+    return `flowable:${isTask ? 'TaskListener' : 'ExecutionListener'}`;
+}
 
 export const listenerType = [
     { text: 'Java 类', value: 'classListener' },
@@ -53,14 +57,22 @@ export const listenerType = [
 //     scriptListener: '脚本'
 // }
 
-export const eventType = {
-    create: '创建',
-    assignment: '指派',
-    complete: '完成',
-    delete: '删除',
-    update: '更新',
-    timeout: '超时'
-};
+export const eventType = [
+    { text: '创建', value: 'create' },
+    { text: '指派', value: 'assignment' },
+    { text: '完成', value: 'complete' },
+    { text: '删除', value: 'delete' },
+    { text: '更新', value: 'update' },
+    { text: '超时', value: 'timeout' }
+];
+// {
+//     create: '创建',
+//     assignment: '指派',
+//     complete: '完成',
+//     delete: '删除',
+//     update: '更新',
+//     timeout: '超时'
+// };
 
 export const fieldType = {
     string: '字符串',

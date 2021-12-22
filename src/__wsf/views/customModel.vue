@@ -2,16 +2,7 @@
     <x-dialog title="新增工作流" v-bind="$attrs" v-on="$listeners" @open="onopen" @ok="ok" @cancel="cancel" fullscreen ok-text="保存" cancel-text="关闭">
         <v-row>
             <v-col sm="10">
-                <bpmn
-                    ref="bpmn"
-                    v-model="bpmnModel"
-                    @xml-imported="imported"
-                    @change="BpmnModelxml"
-                    @element-click="elementClick"
-                    @shape-added="shapeAdded"
-                    @redo="redo"
-                    @init-finished="initModeler"
-                />
+                <bpmn ref="bpmn" v-model="bpmnModel" @change="BpmnModelxml" @redo="redo" @init-finished="initModeler" />
             </v-col>
             <v-col sm="2">
                 <v-card class="mx-auto" style="margin: 6px 0px 0px 0px">
@@ -58,13 +49,18 @@
                             <v-expansion-panel>
                                 <v-expansion-panel-header>执行监听器</v-expansion-panel-header>
                                 <v-expansion-panel-content>
-                                    <v-data-table dense :headers="elementHeaders" :items="elementListenersList" hide-default-footer class="elevation-1">
+                                    <element-listeners
+                                        :bpmn-modeler="bpmnInstances"
+                                        :bpmn-element="element"
+                                        :business-object="businessObject"
+                                    ></element-listeners>
+                                    <!-- <v-data-table dense :headers="elementHeaders" :items="elementListenersList" hide-default-footer class="elevation-1">
                                         <template v-slot:[`item.actions`]="{ item }">
                                             <v-icon small @click="deleteItem(item)">mdi-delete</v-icon>
                                         </template>
                                     </v-data-table>
                                     <v-divider class="mx-4"></v-divider>
-                                    <v-btn block color="primary" @click="openElementListenerForm(null)">添加监听器</v-btn>
+                                    <v-btn block color="primary" @click="openElementListenerForm(null)">添加监听器</v-btn> -->
                                 </v-expansion-panel-content>
                             </v-expansion-panel>
                         </template>
@@ -72,13 +68,11 @@
                             <v-expansion-panel>
                                 <v-expansion-panel-header>任务监听器</v-expansion-panel-header>
                                 <v-expansion-panel-content>
-                                    <v-data-table dense :headers="userTaskHeaders" :items="userTaskListenersList" hide-default-footer class="elevation-1">
-                                        <template v-slot:[`item.actions`]="{ item }">
-                                            <v-icon small @click="deleteItem(item)">mdi-delete</v-icon>
-                                        </template>
-                                    </v-data-table>
-                                    <v-divider class="mx-4"></v-divider>
-                                    <v-btn block color="primary" @click="openUserTaskListenerForm(null)">添加监听器</v-btn>
+                                    <user-task-listeners
+                                        :bpmn-modeler="bpmnInstances"
+                                        :bpmn-element="element"
+                                        :business-object="businessObject"
+                                    ></user-task-listeners>
                                 </v-expansion-panel-content>
                             </v-expansion-panel>
                         </template>
@@ -110,15 +104,16 @@
 <script>
 import _ from 'lodash';
 import { Bpmn, DefaultEmptyXML } from '@/boost-vue/components/Bpmn';
-import { initListenerType } from './listener/utilSelf';
 import ElementMultiInstance from './panel/Multi-instance/ElementMultiInstance.vue';
 import ElementBaseInfo from './panel/base/ElementBaseInfo.vue';
+import ElementListeners from './panel/listener/elementListeners.vue';
+import UserTaskListeners from './panel/listener/userTaskListeners.vue';
 import UserTask from './panel/task/components/UserTask.vue';
 import ScriptTask from './panel/task/components/ScriptTask.vue';
 import ServiceTask from './panel/task/components/ServiceTask.vue';
 
 export default {
-    components: { Bpmn, ElementMultiInstance, ElementBaseInfo, UserTask, ScriptTask, ServiceTask },
+    components: { Bpmn, ElementMultiInstance, ElementBaseInfo, UserTask, ScriptTask, ServiceTask, UserTaskListeners, ElementListeners },
     props: {
         defProcessName: null,
         defProcessId: null,
@@ -131,32 +126,10 @@ export default {
         panel: [0],
         modeler: Object,
         element: null,
-        elementObj: null,
         processType: '',
-        documentation: '',
-        versionTag: '',
-        isExecutable: false,
         formData: { workflowXml: '', workflowId: '' },
-        listenerForm: {},
-        shap: null,
-        elementBaseInfo: {},
-        elementHeaders: [
-            { text: '事件类型', value: 'event' },
-            { text: '监听器类型', value: 'listenerType' },
-            { text: '操作', value: 'action', sortable: false }
-        ],
-        userTaskHeaders: [
-            { text: '事件类型', value: 'event' },
-            { text: '监听器类型', value: 'listenerType' },
-            { text: '操作', value: 'action', sortable: false }
-        ],
         snackbar: false,
         text: '',
-        editingListenerIndex: -1,
-        bpmnElementListeners: [],
-        elementListenersList: [],
-        bpmnUserTaskListeners: [],
-        userTaskListenersList: [],
         bpmnInstances: {
             modeler: Object,
             modeling: Object,
@@ -179,33 +152,14 @@ export default {
     // },
 
     computed: {},
-    watch: {
-        elementBaseInfo: {
-            immediate: false,
-            handler(val) {
-                console.log('handler', val);
-                // this.$nextTick(() => this.resetListenersList());
-                // this.resetListenersList();
-                val && this.$nextTick(() => this.resetListenersList());
-            }
-        }
-    },
+    watch: {},
     methods: {
-        resetListenersList() {
-            console.log('resetListenersList');
-            var _vm = this;
-            // this.bpmnElement = window.bpmnInstances.bpmnElement;
-            // this.otherExtensionList = [];
-            this.bpmnElementListeners = _vm.element.businessObject?.extensionElements?.values?.filter((ex) => ex.$type === 'flowable:ExecutionListener') ?? [];
-            _vm.elementListenersList = this.bpmnElementListeners.map((listener) => initListenerType(listener));
-        },
         initModeler(modeler) {
             var _vm = this;
             setTimeout(() => {
                 console.log('modeler', modeler);
                 _vm.modeler = modeler;
                 _vm.initModels();
-                // this.$refs.bpmn.initFormOnChanged(null);
             }, 10);
         },
         initModels() {
@@ -237,6 +191,7 @@ export default {
             // 初始第一个选中元素 bpmn:Process
             _vm.initFormOnChanged(null);
             _vm.modeler.on('import.done', (e) => {
+                e;
                 _vm.initFormOnChanged(null);
             });
             // 监听选择事件，修改当前激活的元素以及表单
@@ -270,67 +225,13 @@ export default {
             console.log('businessObject: ', activatedElement.businessObject);
             _vm.businessObject = activatedElement.businessObject;
             _vm.element = activatedElement;
-            _vm.elementBaseInfo = JSON.parse(JSON.stringify(activatedElement.businessObject));
             _vm.processType = activatedElement.type;
-            const documentations = activatedElement?.businessObject?.documentation;
-            var documentation = documentations && documentations.length ? documentations[0].text : '';
-            console.log('documentation:', documentation);
-            var elementListener = activatedElement?.extensionElements?.values?.filter((ex) => ex.$type === 'flowable:ExecutionListener') ?? [];
-            console.log('elementListener:', elementListener);
-            _vm.bpmnElementListeners = elementListener;
-            _vm.elementListenersList = _vm.bpmnElementListeners.map((listener) => initListenerType(listener));
-            // window.bpmnInstances.bpmnElement = activatedElement;
-            // this.bpmnElement = activatedElement;
-            // this.elementId = activatedElement.id;
-            // this.elementType = activatedElement.type.split(':')[1] || '';
-            // this.elementBusinessObject = JSON.parse(JSON.stringify(activatedElement.businessObject));
-            // this.conditionFormVisible = !!(
-            //     this.elementType === 'SequenceFlow' &&
-            //     activatedElement.source &&
-            //     activatedElement.source.type.indexOf('StartEvent') === -1
-            // );
-            // this.formVisible = this.elementType === 'UserTask' || this.elementType === 'StartEvent';
-        },
-        shapeAdded(shape) {
-            console.log('新增', shape);
-            // this.elementBaseInfo.id = shape.id;
-            // this.elementBaseInfo.name = shape.name;
-            // this.elementBaseInfo.processType = shape.type;
-        },
-        imported(model, shape) {
-            console.log('model', model);
-            console.log('shape', shape);
-            this.modeler = model;
-            // this.elementBaseInfo.id = shape.id;
-            // this.elementBaseInfo.name = shape.name;
-            // this.elementBaseInfo.processType = shape.type;
-        },
-        elementClick(element, elementObj) {
-            // var _vm = this;
-            // console.log('elementObj', elementObj);
-            // console.log('F-element', element);
-            // console.log('businessObject', element.businessObject);
-            // _vm.shap = element.businessObject;
-            // _vm.element = element;
-            // _vm.elementObj = elementObj;
-            // _vm.processType = element.type;
-            // console.log('点击了' + element.type + _vm.processKey);
-            // this.$refs.bpmn.updateDocumentation(this.processKey, '说明文档啦啦啦');
-            // _vm.elementBaseInfo = JSON.parse(JSON.stringify(element.businessObject));
-            // console.log('elementBaseInfo', _vm.elementBaseInfo);
-            // var elementListener = this.shap?.extensionElements?.values?.filter((ex) => ex.$type === 'flowable:ExecutionListener') ?? [];
-            // console.log('elementListener:', elementListener);
-            // _vm.bpmnElementListeners = elementListener;
-            // _vm.elementListenersList = _vm.bpmnElementListeners.map((listener) => initListenerType(listener));
         },
         BpmnModelxml(bpmnXml) {
-            // console.log('新图', bpmnXml);
             this.changeBpmnModelXml = bpmnXml;
         },
         cancel() {
-            // this.xml = bpmnFactory.create();
             this.$emit('close');
-            // this.$emit('close', { code: 'ok' });
         },
         ok() {
             var _vm = this;
@@ -340,7 +241,6 @@ export default {
                 console.log('结果111', _vm.formData);
                 _vm.$emit('close', { code: 'ok', data: this.formData });
             });
-            // this.$emit('close', { code: 'ok', data: value });
         },
         redo() {
             this.$refs.bpmn.processRestart();
@@ -356,89 +256,6 @@ export default {
                 console.log('初始化1', this.process);
                 this.bpmnModel = this.process;
             }
-        },
-        add() {
-            var otherExtensionList = [];
-            this.listenerForm.event = 'start';
-            this.listenerForm.listenerType = 'classListener';
-            this.listenerForm.class = 'com.example.processengine.listener.StartExecutionListener';
-            const listenerObject = this.$refs.bpmn.createListenerObject(this.listenerForm, false);
-            console.log('listenerObject', listenerObject);
-            console.log('otherExtensionList', otherExtensionList);
-            this.$refs.bpmn.modifyModelListener(this.element, otherExtensionList.concat(listenerObject));
-        },
-        saveElementListener(data) {
-            var _vm = this;
-            const listenerObject = this.$refs.bpmn.createListenerObject(data, false);
-            _vm.bpmnElementListeners.push(listenerObject);
-            _vm.$refs.bpmn.modifyModelListener(_vm.element, _vm.bpmnElementListeners);
-            console.log('listenerObject', listenerObject);
-            console.log('elementListenersList', _vm.elementListenersList);
-        },
-        updateBaseInfo(key) {
-            const attrObj = Object.create(null);
-            attrObj[key] = this.elementBaseInfo[key];
-            console.log('key', attrObj[key]);
-            this.$refs.bpmn.modifyModel(this.element, attrObj);
-        },
-        updateDocumentation() {
-            console.log(this.documentation);
-            this.$refs.bpmn.updateDocumentation(this.element, this.documentation);
-        },
-        openElementListenerForm(v) {
-            var _vm = this;
-            // console.log('v:', v);
-            // console.log('elementObj:', _vm.elementObj);
-            // var elementObj = _vm.elementObj;
-            // if (elementObj == null) {
-            //     this.snackbar = true;
-            //     this.text = '请在流程图上点击一个组件';
-            //     return;
-            // }
-            if (v == null) {
-                console.log('新增');
-                _vm.$dialog.open(
-                    import('./listener/elementListeners.vue'),
-                    {},
-                    {
-                        ok(v) {
-                            console.log(v);
-                            _vm.elementListenersList.push(v);
-                            _vm.saveElementListener(v);
-                        }
-                    }
-                );
-            }
-        },
-        openUserTaskListenerForm(v) {
-            var _vm = this;
-            // console.log('v:', v);
-            // console.log('businessObject:', _vm.businessObject);
-            // var businessObject = _vm.businessObject;
-            // if (businessObject == null) {
-            //     this.snackbar = true;
-            //     this.text = '请在流程图上点击一个组件';
-            //     return;
-            // }
-            if (v == null) {
-                console.log('新增');
-                _vm.$dialog.open(
-                    import('./listener/userTaskListeners.vue'),
-                    {},
-                    {
-                        ok(v) {
-                            console.log(v);
-                            // _vm.elementListenersList.push(v);
-                            // _vm.saveElementListener(v);
-                        }
-                    }
-                );
-            }
-        },
-        deleteItem(item) {
-            const index = this.elementListenersList.indexOf(item);
-            console.log('index', index);
-            confirm('Are you sure you want to delete this item?') && this.elementListenersList.splice(index, 1);
         },
         previewProcessXML() {
             var _vm = this;

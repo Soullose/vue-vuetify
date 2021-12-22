@@ -93,12 +93,12 @@ var Bpmn = {
             // 注册需要的监听事件, 将. 替换为 - , 避免解析异常
             this.events.forEach((event) => {
                 EventBus.on(event, function (eventObj) {
-                    console.log('eventObj', eventObj);
+                    // console.log('eventObj', eventObj);
                     // console.log(event);
                     let eventName = event.replace(/\./g, '-');
                     let element = eventObj ? eventObj.element : null;
-                    console.log('eventName', eventName);
-                    console.log('element', element);
+                    // console.log('eventName', eventName);
+                    // console.log('element', element);
                     that.$emit(eventName, element, eventObj);
                 });
             });
@@ -161,13 +161,6 @@ var Bpmn = {
                 this.$emit('canvas-viewbox-changed', { viewbox });
                 const { scale } = viewbox;
                 this.defaultZoom = Math.floor(scale * 100) / 100;
-            });
-            this.bpmnModeler.on('element.changed', ({ element }) => {
-                console.log('element.changed', element);
-                // 保证 修改 "默认流转路径" 类似需要修改多个元素的事件发生的时候，更新表单的元素与原选中元素不一致。
-                // if (element && element.id === this.elementId) {
-                //   this.initFormOnChanged(element);
-                // }
             });
         },
         //恢复
